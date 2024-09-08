@@ -8,6 +8,9 @@ import "react-toastify/dist/ReactToastify.css";
 import axiosInstance from "../utils/axiosinstance";
 
 const Home = () => {
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+  console.log("Current User : ", currentUser);
+  
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tasks, setTasks] = useState([]);
@@ -15,7 +18,6 @@ const Home = () => {
   const [draggedTask, setDraggedTask] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Separate sort options for each status
   const [sortOptions, setSortOptions] = useState({
     pending: "latest",
     "in-progress": "latest",
@@ -24,12 +26,12 @@ const Home = () => {
 
   const fetchTasks = useCallback(async () => {
     try {
-      const response = await axiosInstance.get(`/getAllTasks`);
+      const response = await axiosInstance.get(`/getAllTasks/${currentUser?._id}`);
       setTasks(response.data.tasks);
     } catch (error) {
-      toast.error("Error fetching tasks");
+      // toast.error("Error fetching tasks");
     }
-  }, []);
+  }, [currentUser?._id]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -52,7 +54,7 @@ const Home = () => {
     if (!draggedTask) return;
 
     try {
-      await axiosInstance.put(`/updateStatus/${draggedTask._id}`, { status });
+      await axiosInstance.put(`/updateStatus/${currentUser?._id}/${draggedTask._id}`, { status });
       setTasks((prevTasks) =>
         prevTasks.map((t) =>
           t._id === draggedTask._id ? { ...t, status } : t
@@ -63,23 +65,25 @@ const Home = () => {
     } finally {
       setDraggedTask(null);
     }
-  }, [draggedTask]);
+  }, [draggedTask, currentUser?._id]);
 
   const onDeleteTask = useCallback(async (id) => {
     try {
-      await axiosInstance.delete(`/deleteTask/${id}`);
+      await axiosInstance.delete(`/deleteTask/${currentUser?._id}/${id}`);
       toast.success("Task deleted successfully");
       setTasks((prevTasks) => prevTasks.filter((task) => task._id !== id));
     } catch (error) {
+      console.log(error);
       toast.error("Error deleting task");
     }
-  }, []);
+  }, [currentUser?._id]);
 
   const addOrEditTask = useCallback(
     async (task) => {
       try {
         if (taskToEdit) {
-          await axiosInstance.put(`/updateTask/${taskToEdit._id}`, {
+          await axiosInstance.put(`/updateTask/${currentUser?._id}/${taskToEdit._id}`, {
+            userId: currentUser?._id,
             title: task.taskName,
             description: task.taskDescription,
           });
@@ -90,18 +94,22 @@ const Home = () => {
                 : t
             )
           );
+          fetchTasks()
           setTaskToEdit(null);
         } else {
-          await axiosInstance.post(`/addTask`, task);
+          await axiosInstance.post(`/addTask`, { userId: currentUser?._id, taskName: task.taskName, taskDescription: task.taskDescription });
           toast.success("Task added successfully");
           setTasks((prevTasks) => [...prevTasks, task]);
+          fetchTasks()
         }
         setIsModalOpen(false);
       } catch (error) {
+        console.log(error);
+        
         toast.error("Error saving task");
       }
     },
-    [taskToEdit]
+    [taskToEdit, currentUser?._id]
   );
 
   const handleEditTask = useCallback((task) => {
@@ -113,7 +121,6 @@ const Home = () => {
     setSearchQuery(e.target.value);
   };
 
-  // Function to handle individual sort option change for each column
   const handleSortChange = (status, value) => {
     setSortOptions((prevSortOptions) => ({
       ...prevSortOptions,
@@ -121,7 +128,6 @@ const Home = () => {
     }));
   };
 
-  // Memoize the filtered and sorted tasks based on status and sort option
   const getSortedTasks = (tasks, status, sortOption) => {
     let filteredTasks = tasks.filter((task) => task.status === status && task.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -130,9 +136,9 @@ const Home = () => {
     } else if (sortOption === "descending") {
       filteredTasks.sort((a, b) => b.title.localeCompare(a.title));
     } else if (sortOption === "latest") {
-      filteredTasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      filteredTasks.sort((a, b) => new Date(b.date) - new Date(a.date));
     } else if (sortOption === "oldest") {
-      filteredTasks.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      filteredTasks.sort((a, b) => new Date(a.date) - new Date(b.date));
     }
 
     return filteredTasks;

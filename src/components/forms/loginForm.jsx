@@ -15,9 +15,10 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`http://localhost:4000/api/login`, { email, password });
+      const res = await axios.post(`${process.env.REACT_APP_BASE_URL}/login`, { email, password });
       
         localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
         navigate("/home");
      
     } catch (error) {
@@ -60,6 +61,7 @@ const LoginForm = () => {
           axios.post(`${process.env.REACT_APP_BASE_URL}/login`, data).then((res) => {
             
             localStorage.setItem("token", res.data.token);
+            localStorage.setItem("user", JSON.stringify(res.data.user));
             navigate("/home");
 
           }).catch((err) =>{

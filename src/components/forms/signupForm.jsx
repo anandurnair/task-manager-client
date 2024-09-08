@@ -62,9 +62,10 @@ const SignupForm = () => {
     }
 
     try {
-      const res = await axios.post(`http://localhost:4000/api/signup`, { firstName, lastName, email, password });
+      const res = await axios.post(`${process.env.REACT_APP_BASE_URL}/signup`, { firstName, lastName, email, password });
       if (res.status === 201 && res.data.token) {
         localStorage.setItem('token', res.data.token);
+        localStorage.setItem('user', JSON.stringify(res.data.user));
         navigate('/home');
       }
     } catch (error) {
@@ -106,8 +107,9 @@ const SignupForm = () => {
             type: "google"
           };
 
-          axios.post('http://localhost:4000/api/signup', data).then((res) => {
+          axios.post(`${process.env.REACT_APP_BASE_URL}/signup`, data).then((res) => {
             localStorage.setItem("token", res.data.token);
+            localStorage.setItem("user", JSON.stringify(res.data.user));
             navigate("/home");
           }).catch((err) => {
             toast.error(`Error signing up: ${err.response?.data?.message || err.message}`);

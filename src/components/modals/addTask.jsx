@@ -4,13 +4,11 @@ const AddEditTaskModal = ({ isOpen, closeModal, saveTask, taskToEdit }) => {
   const [taskName, setTaskName] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
 
-  // Populate the form when taskToEdit is passed (for editing)
   useEffect(() => {
     if (taskToEdit) {
       setTaskName(taskToEdit.title);
       setTaskDescription(taskToEdit.description);
     } else {
-      // Reset form for adding a new task
       setTaskName('');
       setTaskDescription('');
     }
@@ -18,7 +16,6 @@ const AddEditTaskModal = ({ isOpen, closeModal, saveTask, taskToEdit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Save task (whether adding or editing)
     saveTask({ taskName, taskDescription });
     closeModal();
     setTaskName('');

@@ -19,9 +19,11 @@ const Navbar = () => {
   const handleLogout = () => {
     alert("Are you sure you want to logout?");
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setToken(null);
     navigate("/");
   };
+
 
   return (
     <div className="w-full flex justify-between items-center py-3 px-4 md:px-28 bg-blue-500">
@@ -36,8 +38,11 @@ const Navbar = () => {
         </button>
       ) : (
         <div className="flex gap-3">
-          <Button className="ml-10 bg-white" value={"Login"} />
-          <Button className="ml-10 bg-white" value={"Signup"} />
+          <Button className="ml-10 bg-white" handler={() => navigate("/")} onClick={() => {
+            
+            navigate("/");
+          }} value={"Login"} />
+          <Button className="ml-10 bg-white" handler={() => navigate("/signup")}  value={"Signup"} />
         </div>
       )}
     </div>
