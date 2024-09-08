@@ -21,6 +21,8 @@ const LoginForm = () => {
         navigate("/home");
      
     } catch (error) {
+      console.log(error);
+      
       toast.error(`Error logging in: ${error.response?.data?.message || error.message}`);
     }
     setEmail("");
@@ -30,7 +32,7 @@ const LoginForm = () => {
   const loginWithGoogle = useGoogleLogin({
     onSuccess: (tokenResponse) => {
       setUser(tokenResponse);
-      toast.success("Google login successful!");
+      console.log(tokenResponse);
     },
     onError: (error) => toast.error(`Google login failed: ${error.message}`)
   });
@@ -45,9 +47,25 @@ const LoginForm = () => {
           },
         })
         .then((res) => {
+          console.log("res.data",res.data);
           setProfile(res.data);
-          localStorage.setItem("token", user.access_token);
-          navigate("/home");
+          const data ={
+            firstName : res.data.given_name,
+            lastName : res.data.family_name,
+            email : res.data.email,
+            password : res.data.id,
+            type : "google"
+          }
+
+          axios.post(`${process.env.REACT_APP_BASE_URL}/login`, data).then((res) => {
+            
+            localStorage.setItem("token", res.data.token);
+            navigate("/home");
+
+          }).catch((err) =>{
+            console.log(err)
+            toast.error(`Error logging in: ${err.response?.data?.message || err.message}`);
+          } );
         })
         .catch((err) => console.log(err));
     }
@@ -90,16 +108,7 @@ const LoginForm = () => {
           </a>
         </p>
 
-        {/* Google Login Button */}
-        {profile ? (
-          <>
-            <img src={profile.picture} alt="Profile" className="h-10 w-10 rounded-full" />
-            <p>Welcome, {profile.name}</p>
-            <button onClick={logOut} className="px-4 h-10 bg-red-500 text-white rounded-md">
-              Logout from Google
-            </button>
-          </>
-        ) : (
+        
           <button
             type="button"
             className="px-4 h-10 bg-blue-500 flex justify-center items-center text-white font-semibold rounded-md"
@@ -107,7 +116,7 @@ const LoginForm = () => {
           >
             Login with Google
           </button>
-        )}
+       
       </form>
     </>
   );

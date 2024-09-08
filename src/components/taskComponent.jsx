@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import ViewTaskModal from "./modals/viewTask"; // Import the new modal
+import ViewTaskModal from "./modals/viewTask";
 
 const TaskComponent = ({ task, onEdit, onDelete }) => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -7,17 +7,25 @@ const TaskComponent = ({ task, onEdit, onDelete }) => {
   const handleViewTask = () => {
     setIsViewModalOpen(true);
   };
-
+  const formatDate = (dateString) => {
+    const options = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    };
+    return new Date(dateString).toLocaleString(undefined, options);
+  };
   return (
     <div className="w-full min-h-40 p-3 bg-blue-100 rounded-md flex flex-col justify-between">
       <div>
         <h1 className="font-bold text-lg text-gray-900">{task?.title}</h1>
         <p className="text-gray-700 text-base">{task?.description}</p>
       </div>
-
       <div className="flex flex-col gap-2">
         <div>
-          <p className="text-gray-500">Created at : {task?.createdAt}</p>
+          <p className="text-gray-500 text-base">Created at: {formatDate(task?.createdAt)}</p>
         </div>
         <div className="w-full flex gap-2 justify-end">
           <button
@@ -32,7 +40,6 @@ const TaskComponent = ({ task, onEdit, onDelete }) => {
           >
             Edit
           </button>
-
           <button
             className="bg-blue-500 text-white px-4 rounded-md"
             onClick={handleViewTask}
